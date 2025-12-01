@@ -2,7 +2,7 @@
 
 A responsive web quiz component with Google Sheets integration. Demonstrates modern UI development and data handling techniques.
 
-![Quiz Widget Preview](https://via.placeholder.com/800x400.png?text=Interactive+Quiz+Widget+Preview)
+![Quiz Widget Screenshot](Screenshot%202025-12-01%20101503.png)
 
 ## Features
 
