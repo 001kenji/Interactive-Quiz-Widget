@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quiz Widget</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-code"></i> Interactive Quiz Widget</h1>
+            <p class="subtitle">Demonstrating UI Development & Google Sheets Integration</p>
+        </header>
+        
+        <main class="main-content">
+            <div class="quiz-container">
+                <div class="quiz-header">
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                    <div class="quiz-info">
+                        <span id="questionCounter">Question 1 of 5</span>
+                        <span class="score">Score: <span id="score">0</span></span>
+                    </div>
+                </div>
+                
+                <div class="quiz-body">
+                    <div class="question-container">
+                        <h2 id="questionText">Loading question...</h2>
+                        <div class="options-container" id="optionsContainer"></div>
+                    </div>
+                    
+                    <div class="quiz-controls">
+                        <button id="prevBtn" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Previous
+                        </button>
+                        <button id="nextBtn" class="btn btn-primary">
+                            Next <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <button id="submitBtn" class="btn btn-success" style="display: none;">
+                            <i class="fas fa-paper-plane"></i> Submit Quiz
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="result-container" id="resultContainer" style="display: none;">
+                    <h2><i class="fas fa-trophy"></i> Quiz Completed!</h2>
+                    <div class="score-display">
+                        <div class="score-circle">
+                            <span id="finalScore">0</span>
+                            <small>out of 5</small>
+                        </div>
+                        <p id="resultMessage"></p>
+                    </div>
+                    <div class="action-buttons">
+                        <button id="restartBtn" class="btn btn-primary">
+                            <i class="fas fa-redo"></i> Take Quiz Again
+                        </button>
+                        <button id="viewSheetBtn" class="btn btn-outline">
+                            <i class="fas fa-table"></i> View Google Sheet Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-panel">
+                <div class="panel-section">
+                    <h3><i class="fas fa-info-circle"></i> About This Widget</h3>
+                    <p>This interactive quiz demonstrates:</p>
+                    <ul>
+                        <li>Dynamic UI updates without page reload</li>
+                        <li>Progress tracking and visual feedback</li>
+                        <li>Responsive design for all screen sizes</li>
+                        <li>Google Sheets integration for data storage</li>
+                    </ul>
+                </div>
+                
+                <div class="panel-section">
+                    <h3><i class="fas fa-database"></i> Google Sheets Integration</h3>
+                    <p>Quiz results are sent to a Google Sheet using Google Apps Script.</p>
+                    <div class="data-status">
+                        <p>Data Status: <span id="dataStatus">Ready to collect data</span></p>
+                        <div class="status-indicator" id="statusIndicator"></div>
+                    </div>
+                    <button id="testConnectionBtn" class="btn btn-small">
+                        <i class="fas fa-plug"></i> Test Connection
+                    </button>
+                </div>
+                
+                <div class="panel-section">
+                    <h3><i class="fas fa-code"></i> Technical Implementation</h3>
+                    <p>Built with:</p>
+                    <div class="tech-tags">
+                        <span class="tag">HTML5</span>
+                        <span class="tag">CSS3</span>
+                        <span class="tag">JavaScript</span>
+                        <span class="tag">Google Apps Script</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="footer">
+            <p>Interactive UI Component for Job Application | Built with modern web technologies</p>
+        </footer>
+    </div>
+    
+    <!-- Modal for Google Sheets info -->
+    <div id="sheetModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-table"></i> Google Sheets Integration</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h4>How to Connect to Google Sheets:</h4>
+                <ol>
+                    <li>Create a new Google Sheet</li>
+                    <li>Go to <strong>Extensions → Apps Script</strong></li>
+                    <li>Replace the default code with the provided Apps Script</li>
+                    <li>Deploy as a web app (execute as me, anyone can access)</li>
+                    <li>Copy the web app URL and paste it in the code</li>
+                </ol>
+                
+                <div class="code-block">
+                    <h5>Apps Script Code:</h5>
+                    <pre><code>function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  
+  sheet.appendRow([
+    new Date(),
+    data.name,
+    data.email,
+    data.score,
+    data.totalQuestions,
+    data.percentage,
+    data.timeSpent
+  ]);
+  
+  return ContentService
+    .createTextOutput(JSON.stringify({result: 'success'}))
+    .setMimeType(ContentService.MimeType.JSON);
+}</code></pre>
+                </div>
+                
+                <div class="note">
+                    <p><strong>Note:</strong> The actual implementation in this demo uses a simulated API call. In a real application, you would replace the mock URL with your actual Apps Script web app URL.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
