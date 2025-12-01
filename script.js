@@ -1,4 +1,4 @@
-// script.js
+// script.js - SIMPLIFIED WORKING VERSION
 document.addEventListener('DOMContentLoaded', function() {
     // Quiz data
     const quizData = [
@@ -69,14 +69,19 @@ document.addEventListener('DOMContentLoaded', function() {
     let score = 0;
     let selectedOptions = new Array(quizData.length).fill(null);
     let quizCompleted = false;
+    let startTime = Date.now();
+
+    // REPLACE THIS WITH YOUR ACTUAL GOOGLE SCRIPT URL
+    // Get this after deploying your Apps Script
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyD1ac_a7eT2AcgQYibheFKUlG2eaIy2Ztb29MdXYU_GbzVABgjhvt284Low6wLlEJc/exec';
 
     // Initialize quiz
     function initQuiz() {
+        startTime = Date.now();
         loadQuestion();
         updateProgress();
         updateButtons();
         
-        // Set initial status
         statusIndicator.className = 'status-indicator ready';
         dataStatus.textContent = 'Ready to collect data';
     }
@@ -87,10 +92,8 @@ document.addEventListener('DOMContentLoaded', function() {
         questionText.textContent = question.question;
         questionCounter.textContent = `Question ${currentQuestion + 1} of ${quizData.length}`;
         
-        // Clear previous options
         optionsContainer.innerHTML = '';
         
-        // Create option elements
         question.options.forEach((option, index) => {
             const optionElement = document.createElement('div');
             optionElement.className = 'option';
@@ -114,29 +117,22 @@ document.addEventListener('DOMContentLoaded', function() {
     function selectOption(index) {
         if (quizCompleted) return;
         
-        // Deselect all options
         document.querySelectorAll('.option').forEach(option => {
             option.classList.remove('selected');
         });
         
-        // Select clicked option
         document.querySelectorAll('.option')[index].classList.add('selected');
         selectedOptions[currentQuestion] = index;
         
-        // Check if answer is correct
         if (index === quizData[currentQuestion].correctAnswer) {
-            if (selectedOptions[currentQuestion] !== index) {
-                score++;
-                scoreElement.textContent = score;
-            }
+            score++;
         } else {
-            // If previously selected correct answer, decrease score
             if (selectedOptions[currentQuestion] === quizData[currentQuestion].correctAnswer) {
                 score--;
-                scoreElement.textContent = score;
             }
         }
         
+        scoreElement.textContent = score;
         updateButtons();
     }
 
@@ -152,7 +148,6 @@ document.addEventListener('DOMContentLoaded', function() {
         nextBtn.style.display = currentQuestion < quizData.length - 1 ? 'flex' : 'none';
         submitBtn.style.display = currentQuestion === quizData.length - 1 ? 'flex' : 'none';
         
-        // Enable next/submit only if an option is selected
         const isOptionSelected = selectedOptions[currentQuestion] !== null;
         nextBtn.disabled = !isOptionSelected;
         submitBtn.disabled = !isOptionSelected;
@@ -162,7 +157,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function showResults() {
         quizCompleted = true;
         
-        // Calculate final score
         let finalScoreValue = 0;
         selectedOptions.forEach((selected, index) => {
             if (selected === quizData[index].correctAnswer) {
@@ -172,7 +166,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         finalScore.textContent = finalScoreValue;
         
-        // Set result message
         let message = '';
         if (finalScoreValue === quizData.length) {
             message = 'Perfect! You got all questions right!';
@@ -185,89 +178,113 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         resultMessage.textContent = message;
         
-        // Hide quiz body, show results
         document.querySelector('.quiz-body').style.display = 'none';
         resultContainer.style.display = 'block';
         
-        // Send data to Google Sheets
         sendToGoogleSheets(finalScoreValue);
     }
 
-    // Send data to Google Sheets (simulated)
+    // Send data to Google Sheets - WORKING VERSION
+    // Send data to Google Sheets - JSON VERSION
     async function sendToGoogleSheets(finalScoreValue) {
-        // In a real implementation, this would be your Google Apps Script URL
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbyD1ac_a7eT2AcgQYibheFKUlG2eaIy2Ztb29MdXYU_GbzVABgjhvt284Low6wLlEJc/exec';
+        const timeSpent = Math.floor((Date.now() - startTime) / 1000);
         
-        // Mock data for the quiz
-        const quizResults = {
-            timestamp: new Date().toISOString(),
-            name: "Quiz Participant",
-            email: "participant@example.com",
+        dataStatus.textContent = 'Sending data to Google Sheets...';
+        statusIndicator.className = 'status-indicator ready';
+        
+        // Prepare data as JSON object
+        const quizDataPayload = {
+            name: 'Quiz Participant',
+            email: 'participant@example.com',
             score: finalScoreValue,
             totalQuestions: quizData.length,
             percentage: Math.round((finalScoreValue / quizData.length) * 100),
-            timeSpent: Math.floor(Math.random() * 120) + 30 // Random time between 30-150 seconds
+            timeSpent: timeSpent,
+            answers: selectedOptions
         };
         
-        // Update UI to show sending status
-        dataStatus.textContent = 'Sending data to Google Sheets...';
-        statusIndicator.className = 'status-indicator active';
+        console.log('Sending data:', quizDataPayload);
         
         try {
-            // In a real implementation, you would use:
-            // const response = await fetch(scriptURL, {
-            //     method: 'POST',
-            //     mode: 'no-cors',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify(quizResults)
-            // });
+            const response = await fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(quizDataPayload)
+            });
             
-            // Simulate API call with timeout
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            // Simulate successful response
-            dataStatus.textContent = 'Data successfully sent to Google Sheets!';
-            statusIndicator.className = 'status-indicator active';
-            
-            console.log('Data sent to Google Sheets:', quizResults);
-            
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Success:', result);
+                dataStatus.textContent = 'Data saved to Google Sheets!';
+                statusIndicator.className = 'status-indicator active';
+            } else {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
         } catch (error) {
-            console.error('Error sending data:', error);
-            dataStatus.textContent = 'Failed to send data. Using fallback storage.';
+            console.error('Error:', error);
+            dataStatus.textContent = 'Error sending data';
             statusIndicator.className = 'status-indicator inactive';
             
-            // Fallback: Store in localStorage
-            localStorage.setItem('quizResults', JSON.stringify({
-                ...quizResults,
-                storedLocally: true
-            }));
+            // Try alternative method if JSON fails
+            sendViaAlternativeMethod(quizDataPayload);
         }
     }
 
-    // Test connection to Google Sheets
+    // Alternative method using FormData
+    async function sendViaAlternativeMethod(data) {
+        console.log('Trying alternative method...');
+        
+        const formData = new FormData();
+        formData.append('name', data.name);
+        formData.append('email', data.email);
+        formData.append('score', data.score);
+        formData.append('totalQuestions', data.totalQuestions);
+        formData.append('percentage', data.percentage);
+        formData.append('timeSpent', data.timeSpent);
+        formData.append('answers', JSON.stringify(data.answers));
+        
+        try {
+            const response = await fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                body: formData
+            });
+            
+            console.log('Alternative method response:', response);
+            dataStatus.textContent = 'Data sent (alternative method)';
+            statusIndicator.className = 'status-indicator active';
+        } catch (error) {
+            console.error('Alternative method also failed:', error);
+        }
+    }
+
+    // Test connection
     async function testConnection() {
-        dataStatus.textContent = 'Testing connection to Google Sheets...';
+        dataStatus.textContent = 'Testing connection...';
         statusIndicator.className = 'status-indicator ready';
         
         try {
-            // Simulate connection test
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const response = await fetch(GOOGLE_SCRIPT_URL + '?test=true');
             
-            dataStatus.textContent = 'Connection test successful!';
-            statusIndicator.className = 'status-indicator active';
-            
-            // Reset after 3 seconds
-            setTimeout(() => {
-                if (!quizCompleted) {
-                    dataStatus.textContent = 'Ready to collect data';
-                    statusIndicator.className = 'status-indicator ready';
-                }
-            }, 3000);
-            
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Connection test:', result);
+                dataStatus.textContent = 'Connection successful!';
+                statusIndicator.className = 'status-indicator active';
+                
+                setTimeout(() => {
+                    if (!quizCompleted) {
+                        dataStatus.textContent = 'Ready to collect data';
+                        statusIndicator.className = 'status-indicator ready';
+                    }
+                }, 3000);
+            } else {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
         } catch (error) {
-            dataStatus.textContent = 'Connection test failed';
+            console.error('Connection test failed:', error);
+            dataStatus.textContent = 'Connection failed';
             statusIndicator.className = 'status-indicator inactive';
         }
     }
@@ -304,8 +321,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     submitBtn.addEventListener('click', showResults);
-    
     restartBtn.addEventListener('click', resetQuiz);
+    testConnectionBtn.addEventListener('click', testConnection);
     
     viewSheetBtn.addEventListener('click', () => {
         sheetModal.style.display = 'flex';
@@ -320,9 +337,7 @@ document.addEventListener('DOMContentLoaded', function() {
             sheetModal.style.display = 'none';
         }
     });
-    
-    testConnectionBtn.addEventListener('click', testConnection);
 
-    // Initialize the quiz
+    // Initialize
     initQuiz();
 });
